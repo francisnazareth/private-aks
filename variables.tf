@@ -13,11 +13,12 @@ variable "kv-softdelete-retention-days" {
 }
 
 variable "hub-vnet-address-space" {}
+variable "spoke-vnet-address-space" {}
 variable "firewall-subnet-address-space" {}
 variable "appgw-subnet-address-space" {}
-variable "gateway-subnet-address-space" {}
 variable "bastion-subnet-address-space" {}
 variable "mgmt-subnet1-address-space" {}
+variable "aks-subnet-address-space" {}
 variable "sharedsvc-subnet-address-space" {}
 
 ###################### JUMP SERVERS (WINDOWS & LINUX) #######
