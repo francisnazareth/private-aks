@@ -20,7 +20,7 @@ variable "bastion-subnet-address-space" {}
 variable "mgmt-subnet1-address-space" {}
 variable "aks-subnet-address-space" {}
 variable "sharedsvc-subnet-address-space" {}
-
+variable "aks-system-node-vm-size" {}
 ###################### JUMP SERVERS (WINDOWS & LINUX) #######
 variable "windows-admin-userid" {
   default = "adminuser"

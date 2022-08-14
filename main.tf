@@ -273,18 +273,21 @@ resource "azurerm_subnet_route_table_association" "aks-subnet-to-route-table" {
 }
 
 resource "azurerm_kubernetes_cluster" "private-aks" {
-  name                = "aks-${var.customer-name}-${var.environment}-we-01"
+  name                = "aks-${var.customer-name}-web-we-01"
   location            = var.location
   resource_group_name = azurerm_resource_group.spoke-rg.name
-  dns_prefix          = "aks-${var.customer-name}-${var.environment}"
+  dns_prefix          = "aks-${var.customer-name}-web"
   private_cluster_enabled = true
+  sku_tier            = "Paid"
+  node_resource_group = "rg-aksnode-${var.customer-name}-web-${var.location-prefix}-01"
+  azure_policy_enabled = true
 
   default_node_pool {
     name       = "systempool"
     node_count = 3
-    max_pods   = 80
+    max_pods   = 30
     os_disk_size_gb = 128
-    os_disk_type = "Ephemeral"
+    os_disk_type = "Managed"
     availability_zones = [1, 2, 3]
     vm_size    = var.aks-system-node-vm-size
     vnet_subnet_id = azurerm_subnet.aks-subnet.id
@@ -296,25 +299,42 @@ resource "azurerm_kubernetes_cluster" "private-aks" {
   }
 
   network_profile {
-    network_plugin = "azure"
-    load_balancer_sku = "standard"
-    outbound_type     = "userDefinedRouting"  
-    dns_service_ip     = "172.23.156.10"
-    docker_bridge_cidr = "172.17.0.1/24"
-    service_cidr       = "172.23.156.0/22" 
+    network_plugin       = "azure"
+    network_policy       = "calico"
+    load_balancer_sku    = "standard"
+    outbound_type        = "userDefinedRouting"  
+    dns_service_ip       = "172.23.156.10"
+    docker_bridge_cidr   = "172.17.0.1/24"
+    service_cidr         = "172.23.156.0/22" 
   }
 
-  addon_profile {
-
-    azure_policy {
-      enabled = true
-    }
-
-    oms_agent {
-      enabled                    = true
-      log_analytics_workspace_id = var.la-workspace-resource-id
-    }  
+  oms_agent {
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.la-workspace-hub.id
+  }  
+  
+  tags = {
+    Environment  = var.environment,
+    CreatedBy    = var.createdby,
+    CreationDate = var.creationdate
   }
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "webapp-np" {
+  name                  = "webapp01"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.private-aks.id
+  vm_size               = "Standard_D8ds_v4"
+  node_count            = 3
+  enable_auto_scaling   = true
+  min_count             = 3
+  max_count             = 4
+  vnet_subnet_id        = azurerm_subnet.aks-subnet.id
+  availability_zones    = [1, 2, 3]
+  max_pods              = 20
+  os_disk_size_gb = 128
+  os_disk_type = "Ephemeral"
+
+  node_taints = ["workload=webapp:NoSchedule"]
+  node_labels = {"workload"="webapp"}
 
   tags = {
     Environment  = var.environment,
