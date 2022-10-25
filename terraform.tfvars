@@ -1,4 +1,4 @@
-customer-name="qiib"
+customer-name="customer1"
 location="westeurope"
 location-prefix="we"
 hub-prefix="hub"
