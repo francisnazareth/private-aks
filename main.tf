@@ -325,11 +325,11 @@ resource "azurerm_kubernetes_cluster" "private-aks" {
 resource "azurerm_kubernetes_cluster_node_pool" "webapp-np" {
   name                  = "webapp01"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.private-aks.id
-  vm_size               = "Standard_D8ds_v4"
-  node_count            = 3
+  vm_size               = "Standard_D32ds_v4"
+  node_count            = 10
   enable_auto_scaling   = true
-  min_count             = 3
-  max_count             = 4
+  min_count             = 10
+  max_count             = 40
   vnet_subnet_id        = azurerm_subnet.aks-subnet.id
   availability_zones    = [1, 2, 3]
   max_pods              = 20
